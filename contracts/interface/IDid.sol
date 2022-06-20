@@ -116,4 +116,14 @@ interface IDid {
     function removeController(string calldata did, string calldata controller, bytes calldata singer) external;
 
     function addAllower(string calldata did, string calldata org, bytes calldata singer) external;
+
+    function addProofCredential(
+        string memory did,
+        string memory proofId,
+        string memory typeSignature,
+        string memory proofPurpose,
+        string memory verificationMethod,
+        string memory jws,
+        bytes memory singer
+    ) external;
 }

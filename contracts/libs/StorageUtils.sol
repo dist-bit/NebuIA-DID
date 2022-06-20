@@ -270,11 +270,32 @@ library StorageUtils {
     */
 
     struct Proof {
+        string id;
         string typeSignature;
-        uint created;
+        //uint created;
         string proofPurpose;
         string verificationMethod;
         string jws;
+    }
+
+    /**
+    * @dev query service list
+    * @param proofList proof data
+    */
+    function getProof(IterableMapping.itmap storage proofList)
+    public view returns (Proof[] memory){
+        Proof[] memory result = new Proof[](proofList.size);
+        uint count = 0;
+        for (
+            uint i = proofList.iterate_start();
+            proofList.iterate_valid(i);
+            i = proofList.iterate_next(i)
+        ) {
+            (, bytes memory proofData) = proofList.iterate_get(i);
+            result[count] = deserializeProof(proofData);
+            count++;
+        }
+        return result;
     }
 
     /**
@@ -320,6 +341,35 @@ library StorageUtils {
         return Service(string(id), string(serviceType), string(endpoint));
     }
 
+    function serializeProof(Proof memory proof) public pure returns (bytes memory) {
+        bytes memory idBytes = ZeroCopySink.WriteVarBytes(bytes(proof.id));    
+        bytes memory typeSignatureBytes = ZeroCopySink.WriteVarBytes(bytes(proof.typeSignature));
+        bytes memory proofPurposeBytes = ZeroCopySink.WriteVarBytes(bytes(proof.proofPurpose));
+        bytes memory verificationMethodBytes = ZeroCopySink.WriteVarBytes(bytes(proof.verificationMethod));
+        bytes memory jwsBytes = ZeroCopySink.WriteVarBytes(bytes(proof.jws));
+        // encode services
+        bytes memory proofBytes = abi.encodePacked(idBytes, typeSignatureBytes, proofPurposeBytes, verificationMethodBytes, jwsBytes);
+        return proofBytes;
+    }
+
+    function deserializeProof(bytes memory proofBytes) public pure returns (Proof memory){
+        (bytes memory id, uint offset) = ZeroCopySource.NextVarBytes(proofBytes, 0);
+        
+        bytes memory typeSignature = new bytes(0);
+        (typeSignature, offset) = ZeroCopySource.NextVarBytes(proofBytes, 0);
+        
+        bytes memory proofPurpose = new bytes(0);
+        (proofPurpose, offset) = ZeroCopySource.NextVarBytes(proofBytes, offset);
+
+        bytes memory verificationMethod = new bytes(0);
+        (verificationMethod, offset) = ZeroCopySource.NextVarBytes(proofBytes, offset);
+
+        bytes memory jws = new bytes(0);
+        (jws, offset) = ZeroCopySource.NextVarBytes(proofBytes, offset);
+
+        return Proof(string(id), string(typeSignature), string(proofPurpose), string(verificationMethod), string(jws));
+    }
+
     struct DIDDocument {
         string[] context;
         string id;
@@ -331,6 +381,6 @@ library StorageUtils {
         // VC implementation based on https://www.w3.org/TR/vc-data-model/
         //uint issuanceDate; // when the credential is issued
         string[] allowers;
-        //Proof proof;
+        Proof[] proof;
     }
 }

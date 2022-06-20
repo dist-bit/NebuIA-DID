@@ -22,6 +22,14 @@ library KeyUtils {
         return keccak256(bytes(ctx));
     }
 
+    function genProofKey(string memory did) public pure returns (string memory){
+        return string(abi.encodePacked(did, "@proof"));
+    }
+
+    function genProofSecondKey(string memory ctx) public pure returns (bytes32){
+        return keccak256(bytes(ctx));
+    }
+
     function genPubKeyListKey(string memory did) public pure returns (string memory){
         return string(abi.encodePacked(did, "publicKey"));
     }

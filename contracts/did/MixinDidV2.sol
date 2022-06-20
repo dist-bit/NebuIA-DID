@@ -385,6 +385,40 @@ contract DIDContractV2 is MixinDidStorage, IDid {
         //updateTime(did);
     }
 
+    /*
+     * @param org organization id white list
+     * @param typeSignature
+     * @param proofPurpose
+     * @param verificationMethod
+     * @param jws
+     * @param signer tx signer, could be public key or address
+     */
+    function addProofCredential(
+        string memory did,
+        string memory proofId,
+        string memory typeSignature,
+        string memory proofPurpose,
+        string memory verificationMethod,
+        string memory jws,
+        bytes memory singer
+    ) public override {
+        did = checkWhenOperate(did, singer);
+        string memory proofKey = KeyUtils.genProofKey(did);
+        bytes32 key = KeyUtils.genProofSecondKey(proofId);
+        StorageUtils.Proof memory proof = StorageUtils.Proof(
+            proofId,
+            typeSignature,
+            proofPurpose,
+            verificationMethod,
+            jws
+        );
+        bytes memory proofBytes = StorageUtils.serializeProof(proof);
+        bool replaced = data[proofKey].insert(key, proofBytes);
+        require(!replaced, "proof existed");
+
+        updateTime(did);
+    }
+
     /**
    * @dev add one controller to did controller list
    * @param did did
@@ -676,6 +710,20 @@ contract DIDContractV2 is MixinDidStorage, IDid {
     }
 
     /**
+     * @dev query proof data
+     * @param did did
+     */
+    function getProof(string memory did)
+        public
+        view
+        returns (StorageUtils.Proof[] memory)
+    {
+        string memory proofKey = KeyUtils.genProofKey(did);
+        IterableMapping.itmap storage proof = data[proofKey];
+        return StorageUtils.getProof(proof);
+    }
+
+    /**
    * @dev query did updated time
    * @param did did
    */
@@ -696,15 +744,30 @@ contract DIDContractV2 is MixinDidStorage, IDid {
    * @param did did
    */
     function getDocument(string memory did)
-    public view returns (StorageUtils.DIDDocument memory) {
+        public
+        view
+        returns (StorageUtils.DIDDocument memory)
+    {
         string[] memory context = getContext(did);
         StorageUtils.PublicKey[] memory publicKey = getAllPubKey(did);
         StorageUtils.PublicKey[] memory authentication = getAllAuthKey(did);
         string[] memory controller = getAllController(did);
         string[] memory allowers = getAllAllowers(did);
         StorageUtils.Service[] memory service = getAllService(did);
-        uint updated = getUpdatedTime(did);
+        StorageUtils.Proof[] memory proof = getProof(did);
+        uint256 updated = getUpdatedTime(did);
         // always set created time as 0
-        return StorageUtils.DIDDocument(context, did, publicKey, authentication, controller, service, updated, allowers);
+        return
+            StorageUtils.DIDDocument(
+                context,
+                did,
+                publicKey,
+                authentication,
+                controller,
+                service,
+                updated,
+                allowers,
+                proof
+            );
     }
 }

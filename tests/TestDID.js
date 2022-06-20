@@ -33,6 +33,17 @@ contract('DID', (accounts) => {
         let didContract = await DIDContract.at(instance.address);
         let allPubKey = await didContract.addAllower(did, did, emptySignerPubKey);
     });
+    it('add proof', async () => {
+        const proofId = 'did:nebuia';
+        const typeSignature = 'RsaSignature2018';
+        const proofPurpose = 'assertionMethod';
+        const verificationMethod = 'https://api.nebuia.com/issuers/565049#key-1';
+        const jws = 'eyJhbGciOiJSUzI1NiIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..TCYt5XsITJX1CxPCT8yAV-TVkIEq_PbChOMqsLfRoPsnsgw5WEuts01mq-pQy7UJiN5mgRxD-WUcX16dUEMGlv50aqzpqh4Qktb3rk-BuQy72IFLOqV0G_zS245-kronKb78cPN25DGlcTwLtjPAYuNzVBAh4vGHSrQyHUdBBPM';
+
+        let instance = await EternalStorageProxy.deployed();
+        let didContract = await DIDContract.at(instance.address);
+        let allPubKey = await didContract.addProofCredential(did, proofId, typeSignature, proofPurpose, verificationMethod, jws, emptySignerPubKey);
+    });
     it('test get document', async () => {
         let instance = await EternalStorageProxy.deployed();
         let didContract = await DIDContract.at(instance.address);
