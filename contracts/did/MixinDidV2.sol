@@ -368,6 +368,23 @@ contract DIDContractV2 is MixinDidStorage, IDid {
         updateTime(did);
     }
 
+  /*
+   * @param org organization id white list
+   * @param signer tx signer, could be public key or address
+   */
+    function addAllower(string memory did, string memory org, bytes memory singer)
+    override public {
+        did = checkWhenOperate(did, singer);
+        string memory allowerKey = KeyUtils.genAllowersKey(did);
+        bytes32 key = KeyUtils.genAllowersSecondKey(org);
+        bool replaced = data[allowerKey].insert(key, bytes(org));
+        require(!replaced, "orgnaization existed");
+        updateTime(did);
+        //emit AddController(did, controller);
+        
+        //updateTime(did);
+    }
+
     /**
    * @dev add one controller to did controller list
    * @param did did
@@ -625,6 +642,17 @@ contract DIDContractV2 is MixinDidStorage, IDid {
         return StorageUtils.getContext(ctxList, "https://www.w3.org/ns/did/v1");
     }
 
+     /**
+   * @dev query allowers list
+   * @param did did
+   */
+    function getAllAllowers(string memory did)
+    public view returns (string[] memory){
+        string memory allowersListKey = KeyUtils.genAllowersKey(did);
+        IterableMapping.itmap storage allowersList = data[allowersListKey];
+        return StorageUtils.getAllAllowers(allowersList);
+    }
+
     /**
    * @dev query controller list
    * @param did did
@@ -673,9 +701,10 @@ contract DIDContractV2 is MixinDidStorage, IDid {
         StorageUtils.PublicKey[] memory publicKey = getAllPubKey(did);
         StorageUtils.PublicKey[] memory authentication = getAllAuthKey(did);
         string[] memory controller = getAllController(did);
+        string[] memory allowers = getAllAllowers(did);
         StorageUtils.Service[] memory service = getAllService(did);
         uint updated = getUpdatedTime(did);
         // always set created time as 0
-        return StorageUtils.DIDDocument(context, did, publicKey, authentication, controller, service, updated);
+        return StorageUtils.DIDDocument(context, did, publicKey, authentication, controller, service, updated, allowers);
     }
 }

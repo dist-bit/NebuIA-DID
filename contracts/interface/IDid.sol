@@ -114,4 +114,6 @@ interface IDid {
     event RemoveController(string did, string controller);
 
     function removeController(string calldata did, string calldata controller, bytes calldata singer) external;
+
+    function addAllower(string calldata did, string calldata org, bytes calldata singer) external;
 }

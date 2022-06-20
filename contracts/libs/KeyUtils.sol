@@ -14,6 +14,14 @@ library KeyUtils {
         return keccak256(bytes(ctx));
     }
 
+    function genAllowersKey(string memory did) public pure returns (string memory){
+        return string(abi.encodePacked(did, "@allowers"));
+    }
+
+    function genAllowersSecondKey(string memory ctx) public pure returns (bytes32){
+        return keccak256(bytes(ctx));
+    }
+
     function genPubKeyListKey(string memory did) public pure returns (string memory){
         return string(abi.encodePacked(did, "publicKey"));
     }

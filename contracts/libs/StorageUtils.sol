@@ -225,6 +225,26 @@ library StorageUtils {
         return result;
     }
 
+     /**
+    * @dev query allowers list
+    * @param allowersList allowers list
+    */
+    function getAllAllowers(IterableMapping.itmap storage allowersList)
+    public view returns (string[] memory){
+        string[] memory result = new string[](allowersList.size);
+        uint count = 0;
+        for (
+            uint i = allowersList.iterate_start();
+            allowersList.iterate_valid(i);
+            i = allowersList.iterate_next(i)
+        ) {
+            (, bytes memory ctx) = allowersList.iterate_get(i);
+            result[count] = string(ctx);
+            count++;
+        }
+        return result;
+    }
+
     /**
     * @dev query controller list
     * @param controllerList controller list
@@ -243,6 +263,18 @@ library StorageUtils {
             count++;
         }
         return result;
+    }
+
+    /**
+    * @dev credential proof signature
+    */
+
+    struct Proof {
+        string typeSignature;
+        uint created;
+        string proofPurpose;
+        string verificationMethod;
+        string jws;
     }
 
     /**
@@ -296,5 +328,9 @@ library StorageUtils {
         string[] controller;
         Service[] service;
         uint updated;
+        // VC implementation based on https://www.w3.org/TR/vc-data-model/
+        //uint issuanceDate; // when the credential is issued
+        string[] allowers;
+        //Proof proof;
     }
 }

@@ -11,6 +11,7 @@ const StorageUtils = artifacts.require("StorageUtils");
 
 
 contract('DID', (accounts) => {
+    console.log(accounts[0])
     let did = 'did:etho:' + accounts[0].slice(2).toLowerCase();
     console.log('did:', did);
     let emptySignerPubKey = new Buffer('');
@@ -27,7 +28,19 @@ contract('DID', (accounts) => {
         assert.equal(accounts[0].toLowerCase(), allAuthPubKey[0].pubKeyData.toLowerCase());
         assert.equal("EcdsaSecp256k1RecoveryMethod2020", allAuthPubKey[0].keyType);
     });
-    let privKey = Buffer.from("34654b1fb0ee17a235950fc2b8177af4e69730b180efad7b78b772740c2c6ca0", 'hex');
+    it('add allowers', async () => {
+        let instance = await EternalStorageProxy.deployed();
+        let didContract = await DIDContract.at(instance.address);
+        let allPubKey = await didContract.addAllower(did, did, emptySignerPubKey);
+    });
+    it('test get document', async () => {
+        let instance = await EternalStorageProxy.deployed();
+        let didContract = await DIDContract.at(instance.address);
+        let document = await didContract.getDocument(did);
+        console.log('-------------------------');
+        console.log(document);
+    });
+    /*let privKey = Buffer.from("34654b1fb0ee17a235950fc2b8177af4e69730b180efad7b78b772740c2c6ca0", 'hex');
     let anotherPubKey = eth.privateToPublic(privKey);
     console.log('anotherPubKey:', '0x' + anotherPubKey.toString('hex'));
     it('add another public key', async () => {
@@ -48,6 +61,7 @@ contract('DID', (accounts) => {
         let allAuthPubKey = await didContract.getAllAuthKey(did);
         assert.equal(1, allAuthPubKey.length);
     });
+
     it('set auth key', async () => {
         let instance = await EternalStorageProxy.deployed();
         let didContract = await DIDContract.at(instance.address);
@@ -59,10 +73,14 @@ contract('DID', (accounts) => {
         assert.equal(did.toLowerCase(), evt.args.did.toLowerCase());
         assert.equal('0x' + anotherPubKey.toString('hex').toLowerCase(), evt.args.pubKey.toLowerCase());
         let allPubKey = await didContract.getAllPubKey(did);
+
         assert.equal(2, allPubKey.length);
         assert.equal('0x' + anotherPubKey.toString('hex').toLowerCase(), allPubKey[1].pubKeyData);
         assert.ok(allPubKey[1].isPubKey);
         let allAuthPubKey = await didContract.getAllAuthKey(did);
+        console.log(allPubKey);
+        console.log('----------------------------------------------------------');
+        console.log(allAuthPubKey);
         assert.equal(2, allAuthPubKey.length);
         assert.equal('0x' + anotherPubKey.toString('hex').toLowerCase(), allAuthPubKey[1].pubKeyData);
         assert.equal(allAuthPubKey[1].authIndex, 2);
@@ -100,7 +118,7 @@ contract('DID', (accounts) => {
         assert.equal(allAuthPubKey.length, 2);
         assert.equal(allAuthPubKey[0].authIndex, 1);
         assert.equal(allAuthPubKey[1].authIndex, 4);
-    });
+    }); 
     it('add and remove context', async () => {
         let instance = await EternalStorageProxy.deployed();
         let didContract = await DIDContract.at(instance.address);
@@ -108,7 +126,9 @@ contract('DID', (accounts) => {
         let addCtxTx = await didContract.addContext(did, ctx, emptySignerPubKey);
         console.log("addContext gas:", addCtxTx.receipt.gasUsed);
         let allCtx = await didContract.getContext(did);
-        // console.log(allCtx);
+        console.log(allCtx);
+        let allAuthPubKey = await didContract.getAllAuthKey(did);
+        console.log(allAuthPubKey);
         assert.equal(3, allCtx.length);
         assert.equal(2, addCtxTx.logs.length);
         assert.equal("AddContext", addCtxTx.logs[0].event);
@@ -118,15 +138,15 @@ contract('DID', (accounts) => {
         let removeCtxTx = await didContract.removeContext(did, ctx, emptySignerPubKey);
         console.log("removeContext gas:", removeCtxTx.receipt.gasUsed);
         allCtx = await didContract.getContext(did);
-        // console.log(allCtx);
+        console.log(allCtx);
         assert.equal(1, allCtx.length);
         assert.equal(2, removeCtxTx.logs.length);
         assert.equal("RemoveContext", removeCtxTx.logs[0].event);
         assert.equal("RemoveContext", removeCtxTx.logs[1].event);
         assert.equal(ctx[0], removeCtxTx.logs[0].args.context);
         assert.equal(ctx[1], removeCtxTx.logs[1].args.context);
-    });
-    it('add, update and remove service', async () => {
+    }); 
+    /*it('add, update and remove service', async () => {
         let instance = await EternalStorageProxy.deployed();
         let didContract = await DIDContract.at(instance.address);
         let service1 = {serviceId: "111", serviceType: "222", serviceEndpoint: "333"};
@@ -155,7 +175,7 @@ contract('DID', (accounts) => {
         assert.equal(service2.serviceEndpoint, updateEvt.args.serviceEndpoint);
         allServ = await didContract.getAllService(did);
         assert.equal(2, allServ.length);
-        // console.log(allServ);
+        //console.log(allServ);
         let removeServTx1 = await didContract.removeService(did, service1.serviceId, emptySignerPubKey);
         console.log("removeService gas:", removeServTx1.receipt.gasUsed);
         assert.equal(1, removeServTx1.logs.length);
@@ -165,7 +185,7 @@ contract('DID', (accounts) => {
         assert.equal(service2.serviceEndpoint, removeEvt.args.serviceEndpoint);
         allServ = await didContract.getAllService(did);
         assert.equal(1, allServ.length);
-        // console.log(allServ);
+        //console.log(allServ);
     })
     it('test verify signature', async () => {
         let instance = await EternalStorageProxy.deployed();
@@ -177,9 +197,10 @@ contract('DID', (accounts) => {
         let instance = await EternalStorageProxy.deployed();
         let didContract = await DIDContract.at(instance.address);
         let document = await didContract.getDocument(did);
-        // console.log(document);
+        console.log('-------------------------');
+        console.log(document);
     });
-    it('test upgrade', async () => {
+   /* it('test upgrade', async () => {
         let byteUtils = await BytesUtils.deployed();
         let didUtils = await DidUtils.deployed();
         let keyUtils = await KeyUtils.deployed();
@@ -339,5 +360,5 @@ contract('DID', (accounts) => {
         console.log("deactivateID gas:", tx.receipt.gasUsed);
         // re-register will failed
         // tx = await didContract.regWithPubKey(did, pubKey);
-    });
+    }); */
 });
