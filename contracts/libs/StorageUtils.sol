@@ -356,7 +356,7 @@ library StorageUtils {
         (bytes memory id, uint offset) = ZeroCopySource.NextVarBytes(proofBytes, 0);
         
         bytes memory typeSignature = new bytes(0);
-        (typeSignature, offset) = ZeroCopySource.NextVarBytes(proofBytes, 0);
+        (typeSignature, offset) = ZeroCopySource.NextVarBytes(proofBytes, offset);
         
         bytes memory proofPurpose = new bytes(0);
         (proofPurpose, offset) = ZeroCopySource.NextVarBytes(proofBytes, offset);

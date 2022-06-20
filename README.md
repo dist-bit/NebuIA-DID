@@ -197,6 +197,47 @@ Below is a specific example:
 }
 ```
 
+### White list
+ETHO DID support white list for authorizations in reading information.
+
+
+```json
+{
+  ...
+  "allowers": [ "did:etho:1726ad7021f98c715747d57d165a6831a522d87f" ],
+}
+```
+
+### Proof sinature
+ETHO DID support proof signature based on https://www.w3.org/TR/vc-data-model/.
+ At least one proof mechanism, and the details necessary to evaluate that proof, MUST be expressed for a credential or presentation to be a verifiable credential or verifiable presentation; that is, to be verifiable.
+
+This specification identifies two classes of proof mechanisms: external proofs and embedded proofs. An external proof is one that wraps an expression of this data model, such as a JSON Web Token, which is elaborated on in Section 6.3.1 JSON Web Token. An embedded proof is a mechanism where the proof is included in the data, such as a Linked Data Signature, which is elaborated upon in Section 6.3.2 Data Integrity Proofs.
+
+When embedding a proof, the proof property MUST be used.
+
+proof
+    One or more cryptographic proofs that can be used to detect tampering and verify the authorship of a credential or presentation. The specific method used for an embedded proof MUST be included using the type property. 
+
+Because the method used for a mathematical proof varies by representation language and the technology used, the set of name-value pairs that is expected as the value of the proof property will vary accordingly. For example, if digital signatures are used for the proof mechanism, the proof property is expected to have name-value pairs that include a signature, a reference to the signing entity, and a representation of the signing date. The example below uses RSA digital signatures. 
+
+
+```json
+{
+  ...
+  "proof": [
+    [
+      "id": "did:nebuia",
+      "typeSignature": "did:nebuia",
+      "proofPurpose": "RsaSignature2018",
+      "verificationMethod": "assertionMethod",
+      "jws": "eyJhbGciOiJSUzI1NiIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..TCYt5XsITJX1CxPCT8yAV-TVkIEq_PbChOMqsLfRoPsnsgw5WEuts01mq-pQy7UJiN5mgRxD-WUcX16dUEMGlv50aqzpqh4Qktb3rk-BuQy72IFLOqV0G_zS245-kronKb78cPN25DGlcTwLtjPAYuNzVBAh4vGHSrQyHUdBBPM"
+    ]
+  ]
+}
+```
+
+
 ### Created
 
 ETHO DID Documents do not include a `created` property as ETHO DID can be automatically generated for each Ethereum address.
